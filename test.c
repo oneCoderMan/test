@@ -1,43 +1,35 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-#define BUFSIZE 1024
-
-void vuln(){
-  char buf[20];
-  gets(buf);
-  puts(buf);
-  fflush(stdout);
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <string.h> 
+#include <signal.h> 
+int vuln(char *str)
+{
+    int len = strlen(str);
+    if(str[0] == 'A' && len == 66)
+    {
+        raise(SIGSEGV);
+        //如果输入的字符串的首字符为A并且长度为66，则异常退出
+    }
+    else if(str[0] == 'F' && len == 6)
+    {
+        raise(SIGSEGV);
+        //如果输入的字符串的首字符为F并且长度为6，则异常退出
+    }
+    else
+    {
+        printf("it is good!\n");
+    }
+    return 0;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    char login[32];
-    char passwd[32];
-    
-    printf("Login: ");
-    gets(login);
-    printf("Password: ");
-    gets(passwd);
-    
-    if (strcmp(login, "root") == 0) {
-        if (strcmp(passwd, "12345678") == 0) {
-            printf("Access Granted.\n");
-            
-            // Set the gid to the effective gid
-              // this prevents /bin/sh from dropping the privileges
-              printf("Database Search: ");
-              gid_t gid = getegid();
-              setresgid(gid, gid, gid);
+    char buf[100]={0};
+    gets(buf);//存在栈溢出漏洞
+    printf(buf);//存在格式化字符串漏洞
+    vuln(buf);
 
-              vuln();
-              return 0;
-        }
-    }
-    
-    printf("Access Denied.\n");
-    return 1;
+
+    return 0;
 }
